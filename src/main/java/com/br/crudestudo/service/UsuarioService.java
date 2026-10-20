@@ -15,18 +15,12 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     public UsuarioResponse salvarUsuario(UsuarioRequest usuarioRequest) {
-
-        if (usuarioRequest.getEmail() == null || usuarioRequest.getEmail().isEmpty()) {
-            throw new ResourceNotFoundException("Email nao digitado");
-        }
         if (usuarioRepository.existsByEmail(usuarioRequest.getEmail())) {
             throw new ResourceNotFoundException("Email já cadastrado");
         }
         if (usuarioRepository.existsByCpf(usuarioRequest.getCpf())) {
             throw new ResourceNotFoundException("CPF já cadastrado");
         }
-
-
         Usuario usuario = new Usuario();
         usuario.setNome(usuarioRequest.getNome());
         usuario.setEmail(usuarioRequest.getEmail());
