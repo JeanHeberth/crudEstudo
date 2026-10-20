@@ -1,4 +1,4 @@
-package com.br.crudestudo.exception.record;
+package com.br.crudestudo.record;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

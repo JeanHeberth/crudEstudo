@@ -1,8 +1,9 @@
 package com.br.crudestudo.exception;
 
-import com.br.crudestudo.exception.record.ErrorMessage;
+import com.br.crudestudo.record.ErrorMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -11,6 +12,7 @@ import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,7 +94,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
     }
 
-    // Segurança para dados já cadastrados 422
+    // Regra de negócio violada 422
     @ExceptionHandler(RegraNegocioException.class)
     public ResponseEntity<ErrorMessage> handleRegraNegocio(RegraNegocioException ex) {
         ErrorMessage error = new ErrorMessage(
@@ -100,5 +102,32 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.UNPROCESSABLE_CONTENT);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorMessage> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        // Descobre o tipo que o Spring esperava (ex: Long, Integer)
+        String tipoRequerido = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "numérico";
+
+        // Monta uma mensagem amigável explicando qual o erro de digitação na URL
+        String mensagemErro = String.format(
+                "O parâmetro '%s' na URL deve ser do tipo %s. O valor fornecido '%s' é inválido.",
+                ex.getName(),
+                tipoRequerido,
+                ex.getValue()
+        );
+
+        ErrorMessage error = new ErrorMessage(
+                HttpStatus.BAD_REQUEST.value(),
+                mensagemErro
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ErrorMessage> handleOrdenacaoInvalida(PropertyReferenceException ex) {
+        return ResponseEntity.badRequest()
+                .body(new ErrorMessage(400, "Campo de ordenação inválido: " + ex.getPropertyName()));
     }
 }
