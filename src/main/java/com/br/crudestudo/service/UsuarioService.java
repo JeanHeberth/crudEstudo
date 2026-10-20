@@ -1,30 +1,31 @@
 package com.br.crudestudo.service;
 
-import com.br.crudestudo.exception.ResourceNotFoundException;
 import com.br.crudestudo.model.Usuario;
 import com.br.crudestudo.model.request.UsuarioRequest;
 import com.br.crudestudo.model.response.UsuarioResponse;
 import com.br.crudestudo.repository.UsuarioRepository;
+import com.br.crudestudo.service.validation.usuario.ValidadorCadastroUsuario;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @AllArgsConstructor
 public class UsuarioService {
 
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final List<ValidadorCadastroUsuario> validadores;
 
     public UsuarioResponse salvarUsuario(UsuarioRequest usuarioRequest) {
-        if (usuarioRepository.existsByEmail(usuarioRequest.getEmail())) {
-            throw new ResourceNotFoundException("Email já cadastrado");
-        }
-        if (usuarioRepository.existsByCpf(usuarioRequest.getCpf())) {
-            throw new ResourceNotFoundException("CPF já cadastrado");
-        }
+
+        validadores.forEach(v ->
+                v.validarCadastroUsuario(usuarioRequest));
+
         Usuario usuario = new Usuario();
         usuario.setNome(usuarioRequest.getNome());
         usuario.setEmail(usuarioRequest.getEmail());
-        usuario.setCpf(usuarioRequest.getCpf());
+        usuario.setCpf(usuarioRequest.getCpfLimpo());
         return UsuarioResponse.deEntidade(usuarioRepository.save(usuario));
 
     }
