@@ -39,6 +39,7 @@ war {
     enabled = false
 }
 
+
 bootWar {
     enabled = true
     archiveFileName = "${project.name}.war"
