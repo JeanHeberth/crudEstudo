@@ -13,9 +13,15 @@ public class ValidarCpfDuplicado implements ValidadorCadastroUsuario {
     private final UsuarioRepository usuarioRepository;
 
     @Override
-    public void validarCadastroUsuario(UsuarioRequest usuarioRequest) {
-        if (usuarioRepository.existsByCpf(usuarioRequest.getCpfLimpo())) {
-            throw new CpfDuplicadoException("Cpf duplicado");
+    public void validarCadastroUsuario(UsuarioRequest usuarioRequest, Long id) {
+        if (id == null) {
+            if (usuarioRepository.existsByCpf(usuarioRequest.getCpfLimpo())) {
+                throw new CpfDuplicadoException("CPF já cadastrado");
+            }
+        } else {
+            if (usuarioRepository.existsByCpfAndIdNot(usuarioRequest.getCpfLimpo(), id)) {
+                throw new CpfDuplicadoException("CPF já cadastrado por outro usuário");
+            }
         }
     }
 }

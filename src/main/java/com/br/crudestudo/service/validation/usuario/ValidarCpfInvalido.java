@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class ValidarCpfInvalido implements ValidadorCadastroUsuario {
 
     @Override
-    public void validarCadastroUsuario(UsuarioRequest usuarioRequest) {
+    public void validarCadastroUsuario(UsuarioRequest usuarioRequest, Long id) {
         if (usuarioRequest.getCpfLimpo().matches("(\\d)\\1{10}")) {
             throw new CpfInvalidoException("Cpf invalido");
         }

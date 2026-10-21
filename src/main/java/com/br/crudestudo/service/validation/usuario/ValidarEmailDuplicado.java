@@ -13,9 +13,15 @@ public class ValidarEmailDuplicado implements ValidadorCadastroUsuario {
     private final UsuarioRepository usuarioRepository;
 
     @Override
-    public void validarCadastroUsuario(UsuarioRequest usuarioRequest) {
-        if (usuarioRepository.existsByEmail(usuarioRequest.getEmail())) {
-            throw new EmailDuplicadoException("Email duplicado");
+    public void validarCadastroUsuario(UsuarioRequest usuarioRequest, Long id) {
+        if (id == null) {
+            if (usuarioRepository.existsByEmail(usuarioRequest.getEmail())) {
+                throw new EmailDuplicadoException("Email já cadastrado");
+            }
+        } else {
+            if (usuarioRepository.existsByEmailAndIdNot(usuarioRequest.getEmail(), id)) {
+                throw new EmailDuplicadoException("Email já cadastrado por outro usuário");
+            }
         }
     }
 }
