@@ -5,7 +5,11 @@ pipeline {
 		API_HEALTH_URL = 'http://100.83.72.100:9999/crudEstudo/v1/actuator/health'
 		TOMCAT_WINDOWS = 'C:\\apache-tomcat-11.0.11'
 		TOMCAT_MAC = '/opt/homebrew/opt/tomcat/libexec'
+		// Nome do WAR gerado pelo Gradle
 		WAR_NAME = 'crudEstudo.war'
+		// No Tomcat, "#" no nome do WAR vira "/" no context path (/crudEstudo/v1)
+		DEPLOY_WAR_NAME = 'crudEstudo#v1.war'
+		DEPLOY_APP_DIR = 'crudEstudo#v1'
 	}
 
 	options {
@@ -110,8 +114,8 @@ pipeline {
 
                             echo "Removendo versão anterior..."
 
-                            rm -f "$TOMCAT_MAC/webapps/$WAR_NAME"
-                            rm -rf "$TOMCAT_MAC/webapps/crudEstudo"
+                            rm -f "$TOMCAT_MAC/webapps/$WAR_NAME" "$TOMCAT_MAC/webapps/$DEPLOY_WAR_NAME"
+                            rm -rf "$TOMCAT_MAC/webapps/crudEstudo" "$TOMCAT_MAC/webapps/$DEPLOY_APP_DIR"
 
                             echo "Copiando novo WAR..."
 
@@ -122,7 +126,7 @@ pipeline {
                                 exit 1
                             fi
 
-                            cp "$WAR_FILE" "$TOMCAT_MAC/webapps/$WAR_NAME"
+                            cp "$WAR_FILE" "$TOMCAT_MAC/webapps/$DEPLOY_WAR_NAME"
 
                             echo "Iniciando Tomcat..."
 
@@ -144,12 +148,16 @@ pipeline {
 
                             echo Removendo versao anterior...
 
-                            if exist "%TOMCAT_WINDOWS%\\webapps\\%WAR_NAME%" (
-                                del /F /Q "%TOMCAT_WINDOWS%\\webapps\\%WAR_NAME%"
+                            for %%N in ("%WAR_NAME%" "%DEPLOY_WAR_NAME%") do (
+                                if exist "%TOMCAT_WINDOWS%\\webapps\\%%~N" (
+                                    del /F /Q "%TOMCAT_WINDOWS%\\webapps\\%%~N"
+                                )
                             )
 
-                            if exist "%TOMCAT_WINDOWS%\\webapps\\crudEstudo" (
-                                rmdir /S /Q "%TOMCAT_WINDOWS%\\webapps\\crudEstudo"
+                            for %%D in ("crudEstudo" "%DEPLOY_APP_DIR%") do (
+                                if exist "%TOMCAT_WINDOWS%\\webapps\\%%~D" (
+                                    rmdir /S /Q "%TOMCAT_WINDOWS%\\webapps\\%%~D"
+                                )
                             )
 
                             set "WAR_FILE="
@@ -166,7 +174,7 @@ pipeline {
                             echo Copiando !WAR_FILE!...
 
                             copy /Y "!WAR_FILE!" ^
-                                "%TOMCAT_WINDOWS%\\webapps\\%WAR_NAME%"
+                                "%TOMCAT_WINDOWS%\\webapps\\%DEPLOY_WAR_NAME%"
 
                             if errorlevel 1 (
                                 echo ERRO: Falha ao copiar o WAR.
@@ -198,7 +206,7 @@ pipeline {
 						sh '''
                             echo "Aguardando API iniciar..."
 
-                            for i in $(seq 1 24); do {
+                            for i in $(seq 1 24); do
                                 echo "Tentativa $i de 24..."
 
                                 if curl \
@@ -212,7 +220,7 @@ pipeline {
 
                                 echo "API ainda não está disponível."
                                 sleep 5
-                            }
+                            done
 
                             echo "ERRO: API não iniciou no tempo esperado."
                             exit 1
@@ -250,7 +258,6 @@ pipeline {
 			}
 		}
 	}
-}
 
 post {
 	success {
@@ -277,4 +284,5 @@ post {
 
 		echo 'Pipeline da API concluída.'
 	}
+}
 }
