@@ -7,9 +7,9 @@ pipeline {
 		TOMCAT_MAC = '/opt/homebrew/opt/tomcat/libexec'
 		// Nome do WAR gerado pelo Gradle
 		WAR_NAME = 'crudEstudo.war'
-		// No Tomcat, "#" no nome do WAR vira "/" no context path (/crudEstudo/v1)
-		DEPLOY_WAR_NAME = 'crudEstudo#v1.war'
-		DEPLOY_APP_DIR = 'crudEstudo#v1'
+		// Deploy antigo (context path /crudEstudo/v1 via nome do WAR), removido na limpeza
+		LEGACY_WAR_NAME = 'crudEstudo#v1.war'
+		LEGACY_APP_DIR = 'crudEstudo#v1'
 	}
 
 	options {
@@ -114,8 +114,8 @@ pipeline {
 
                             echo "Removendo versão anterior..."
 
-                            rm -f "$TOMCAT_MAC/webapps/$WAR_NAME" "$TOMCAT_MAC/webapps/$DEPLOY_WAR_NAME"
-                            rm -rf "$TOMCAT_MAC/webapps/crudEstudo" "$TOMCAT_MAC/webapps/$DEPLOY_APP_DIR"
+                            rm -f "$TOMCAT_MAC/webapps/$WAR_NAME" "$TOMCAT_MAC/webapps/$LEGACY_WAR_NAME"
+                            rm -rf "$TOMCAT_MAC/webapps/crudEstudo" "$TOMCAT_MAC/webapps/$LEGACY_APP_DIR"
 
                             echo "Copiando novo WAR..."
 
@@ -126,7 +126,7 @@ pipeline {
                                 exit 1
                             fi
 
-                            cp "$WAR_FILE" "$TOMCAT_MAC/webapps/$DEPLOY_WAR_NAME"
+                            cp "$WAR_FILE" "$TOMCAT_MAC/webapps/$WAR_NAME"
 
                             echo "Iniciando Tomcat..."
 
@@ -148,13 +148,13 @@ pipeline {
 
                             echo Removendo versao anterior...
 
-                            for %%N in ("%WAR_NAME%" "%DEPLOY_WAR_NAME%") do (
+                            for %%N in ("%WAR_NAME%" "%LEGACY_WAR_NAME%") do (
                                 if exist "%TOMCAT_WINDOWS%\\webapps\\%%~N" (
                                     del /F /Q "%TOMCAT_WINDOWS%\\webapps\\%%~N"
                                 )
                             )
 
-                            for %%D in ("crudEstudo" "%DEPLOY_APP_DIR%") do (
+                            for %%D in ("crudEstudo" "%LEGACY_APP_DIR%") do (
                                 if exist "%TOMCAT_WINDOWS%\\webapps\\%%~D" (
                                     rmdir /S /Q "%TOMCAT_WINDOWS%\\webapps\\%%~D"
                                 )
@@ -174,7 +174,7 @@ pipeline {
                             echo Copiando !WAR_FILE!...
 
                             copy /Y "!WAR_FILE!" ^
-                                "%TOMCAT_WINDOWS%\\webapps\\%DEPLOY_WAR_NAME%"
+                                "%TOMCAT_WINDOWS%\\webapps\\%WAR_NAME%"
 
                             if errorlevel 1 (
                                 echo ERRO: Falha ao copiar o WAR.

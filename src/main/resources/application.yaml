@@ -6,6 +6,9 @@ spring:
         default-page-size: 20
   application:
     name: crudEstudo
+  mvc:
+    servlet:
+      path: /v1
   datasource:
     url: jdbc:mysql://localhost:3306/estudandoCRUD?createDatabaseIfNotExist=true
     username: root
