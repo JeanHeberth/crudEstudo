@@ -7,9 +7,6 @@ pipeline {
 		TOMCAT_MAC = '/opt/homebrew/opt/tomcat/libexec'
 		// Nome do WAR gerado pelo Gradle
 		WAR_NAME = 'crudEstudo.war'
-		// Deploy antigo (context path /crudEstudo/v1 via nome do WAR), removido na limpeza
-		LEGACY_WAR_NAME = 'crudEstudo#v1.war'
-		LEGACY_APP_DIR = 'crudEstudo#v1'
 	}
 
 	options {
@@ -114,8 +111,8 @@ pipeline {
 
                             echo "Removendo versão anterior..."
 
-                            rm -f "$TOMCAT_MAC/webapps/$WAR_NAME" "$TOMCAT_MAC/webapps/$LEGACY_WAR_NAME"
-                            rm -rf "$TOMCAT_MAC/webapps/crudEstudo" "$TOMCAT_MAC/webapps/$LEGACY_APP_DIR"
+                            rm -f "$TOMCAT_MAC/webapps/$WAR_NAME"
+                            rm -rf "$TOMCAT_MAC/webapps/crudEstudo"
 
                             echo "Copiando novo WAR..."
 
@@ -148,16 +145,12 @@ pipeline {
 
                             echo Removendo versao anterior...
 
-                            for %%N in ("%WAR_NAME%" "%LEGACY_WAR_NAME%") do (
-                                if exist "%TOMCAT_WINDOWS%\\webapps\\%%~N" (
-                                    del /F /Q "%TOMCAT_WINDOWS%\\webapps\\%%~N"
-                                )
+                            if exist "%TOMCAT_WINDOWS%\\webapps\\%WAR_NAME%" (
+                                del /F /Q "%TOMCAT_WINDOWS%\\webapps\\%WAR_NAME%"
                             )
 
-                            for %%D in ("crudEstudo" "%LEGACY_APP_DIR%") do (
-                                if exist "%TOMCAT_WINDOWS%\\webapps\\%%~D" (
-                                    rmdir /S /Q "%TOMCAT_WINDOWS%\\webapps\\%%~D"
-                                )
+                            if exist "%TOMCAT_WINDOWS%\\webapps\\crudEstudo" (
+                                rmdir /S /Q "%TOMCAT_WINDOWS%\\webapps\\crudEstudo"
                             )
 
                             set "WAR_FILE="
