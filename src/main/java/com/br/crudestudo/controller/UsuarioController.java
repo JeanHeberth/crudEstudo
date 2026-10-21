@@ -33,4 +33,9 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponse> buscarUsuarioPorId(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(usuarioService.buscarUsuario(id));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioResponse> atualizarUsuario(@PathVariable @Valid Long id, @Valid @RequestBody UsuarioRequest usuarioRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.atualizarUsuario(id, usuarioRequest));
+    }
 }
