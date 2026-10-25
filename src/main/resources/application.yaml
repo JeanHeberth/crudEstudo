@@ -20,6 +20,8 @@ server:
 
 api:
   version-prefix: ${API_VERSION_PREFIX:/v1}
+  endpoints:
+    usuario: ${api.version-prefix}/usuario
 
 management:
   endpoints:
@@ -28,3 +30,8 @@ management:
       exposure:
         include: health
 
+springdoc:
+  swagger-ui:
+    path: ${api.version-prefix}/swagger-ui.html
+  api-docs:
+    path: ${api.version-prefix}/api-docs
