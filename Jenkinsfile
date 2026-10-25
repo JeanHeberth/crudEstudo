@@ -5,6 +5,7 @@ pipeline {
 		API_HEALTH_URL = 'http://100.83.72.100:9999/crudEstudo/v1/actuator/health'
 		TOMCAT_WINDOWS = 'C:\\apache-tomcat-11.0.11'
 		TOMCAT_MAC = '/opt/homebrew/opt/tomcat/libexec'
+		// Nome do WAR gerado pelo Gradle
 		WAR_NAME = 'crudEstudo.war'
 	}
 
@@ -198,7 +199,7 @@ pipeline {
 						sh '''
                             echo "Aguardando API iniciar..."
 
-                            for i in $(seq 1 24); do {
+                            for i in $(seq 1 24); do
                                 echo "Tentativa $i de 24..."
 
                                 if curl \
@@ -212,7 +213,7 @@ pipeline {
 
                                 echo "API ainda não está disponível."
                                 sleep 5
-                            }
+                            done
 
                             echo "ERRO: API não iniciou no tempo esperado."
                             exit 1
@@ -250,7 +251,6 @@ pipeline {
 			}
 		}
 	}
-}
 
 post {
 	success {
@@ -277,4 +277,5 @@ post {
 
 		echo 'Pipeline da API concluída.'
 	}
+}
 }
