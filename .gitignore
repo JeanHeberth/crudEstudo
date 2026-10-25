@@ -35,3 +35,38 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# >>> kit-multiagentes (gerenciado por setup-gitignore.sh — não editar dentro do bloco)
+# Arquivos de agentes do kit-multiagentes (ficam só na máquina local).
+# Versiona apenas código de desenvolvimento e o CI (.github/workflows/ não é afetado).
+.kit-multiagentes/
+.claude/
+.agents/
+.codex/
+.mcp.json
+AGENTS.md
+CLAUDE.md
+# Documentos de trabalho dos agentes (especificação, planos, ADRs, critérios)
+docs/api/especificacao.md
+docs/api/projeto.md
+docs/api/arquitetura/
+docs/api/criterios/
+docs/api/planos/
+docs/web/especificacao.md
+docs/web/projeto.md
+docs/web/arquitetura/
+docs/web/criterios/
+docs/web/planos/
+docs/cicd/criterios.md
+docs/cicd/projeto-cicd.md
+# Robot/AutoQA: engine, relatórios, ledger e manifesto continuam versionados
+# (o validate_install do AutoQA falha se forem ignorados); só o estado local fica fora.
+.autoqa/state/run-state.json
+.autoqa/custom/*.user.md
+.env
+# Configuração local de IDE e do sistema
+.idea/
+*.iml
+.vscode/mcp.json
+.DS_Store
+# <<< kit-multiagentes
