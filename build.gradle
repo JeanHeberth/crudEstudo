@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'war'
     id 'org.springframework.boot' version '4.1.1'
     id 'io.spring.dependency-management' version '1.1.7'
@@ -49,4 +50,43 @@ bootWar {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// Adicione id 'jacoco' ao bloco plugins {} e acrescente o trecho abaixo ao final do build.gradle.
+// 0.00: fração (ex.: 0.70) = cobertura de linhas medida menos ~5 pontos.
+
+jacoco {
+    toolVersion = '0.8.13'
+}
+
+// Cada job de teste do CI gera o seu test.exec. O gate de qualidade baixa todos em
+// build/jacoco-merged/ e calcula a cobertura combinada.
+def jacocoMergedData = fileTree(layout.buildDirectory.dir('jacoco-merged')) {
+    include '**/*.exec'
+}
+
+tasks.register('jacocoMergedReport', JacocoReport) {
+    description = 'Relatório de cobertura combinando os .exec de build/jacoco-merged'
+    group = 'verification'
+    executionData.from(jacocoMergedData)
+    sourceSets sourceSets.main
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+tasks.register('jacocoMergedVerification', JacocoCoverageVerification) {
+    description = 'Falha se a cobertura combinada ficar abaixo do mínimo'
+    group = 'verification'
+    executionData.from(jacocoMergedData)
+    sourceSets sourceSets.main
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                minimum = 0.64
+            }
+        }
+    }
 }
