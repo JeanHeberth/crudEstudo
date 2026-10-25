@@ -6,9 +6,6 @@ spring:
         default-page-size: 20
   application:
     name: crudEstudo
-  mvc:
-    servlet:
-      path: /v1
   datasource:
     url: jdbc:mysql://localhost:3306/estudandoCRUD?createDatabaseIfNotExist=true
     username: root
@@ -21,3 +18,20 @@ spring:
 server:
   port: 8089
 
+api:
+  version-prefix: ${API_VERSION_PREFIX:/v1}
+  endpoints:
+    usuario: ${api.version-prefix}/usuario
+
+management:
+  endpoints:
+    web:
+      base-path: ${api.version-prefix}/actuator
+      exposure:
+        include: health
+
+springdoc:
+  swagger-ui:
+    path: ${api.version-prefix}/swagger-ui.html
+  api-docs:
+    path: ${api.version-prefix}/api-docs

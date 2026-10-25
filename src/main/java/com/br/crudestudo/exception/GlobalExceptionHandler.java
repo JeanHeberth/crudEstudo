@@ -3,6 +3,7 @@ package com.br.crudestudo.exception;
 import com.br.crudestudo.record.ErrorMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -129,5 +130,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorMessage> handleOrdenacaoInvalida(PropertyReferenceException ex) {
         return ResponseEntity.badRequest()
                 .body(new ErrorMessage(400, "Campo de ordenação inválido: " + ex.getPropertyName()));
+    }
+
+    // Expressão de ordenação inválida (ex.: sort=["ASC"]) chega do JPA como erro de uso da API de dados
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<ErrorMessage> handleOrdenacaoInvalidaJpa(InvalidDataAccessApiUsageException ex) {
+        if (ex.getMessage() != null && ex.getMessage().contains("Sort expression")) {
+            return ResponseEntity.badRequest().body(new ErrorMessage(400,
+                    "Parâmetro 'sort' inválido. Use o formato 'campo,direção' (ex.: nome,asc)."));
+        }
+        return handleGeneralException(ex);
     }
 }
