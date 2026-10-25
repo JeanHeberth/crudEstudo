@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/usuario")
+@RequestMapping("${api.version-prefix}/api/usuario")
 @RequiredArgsConstructor
 public class UsuarioController {
 
