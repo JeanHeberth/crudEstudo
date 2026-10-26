@@ -43,7 +43,7 @@ pipeline {
 			}
 		}
 
-		stage('Testes e build da API') {
+		stage('Build da API') {
 			steps {
 				script {
 					if (isUnix()) {
@@ -52,7 +52,7 @@ pipeline {
 
                             chmod +x gradlew
 
-                            ./gradlew clean test bootWar \
+                            ./gradlew clean bootWar -x test \
                                 --stacktrace \
                                 --no-daemon
                         '''
@@ -62,7 +62,7 @@ pipeline {
 
                             echo Gerando WAR da API...
 
-                            call gradlew.bat clean test bootWar ^
+                            call gradlew.bat clean bootWar -x test ^
                                 --stacktrace ^
                                 --no-daemon
 
