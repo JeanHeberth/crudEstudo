@@ -4,8 +4,9 @@ import com.br.crudestudo.exception.CpfInvalidoException;
 import com.br.crudestudo.exception.EmailDuplicadoException;
 import com.br.crudestudo.exception.ResourceNotFoundException;
 import com.br.crudestudo.model.Usuario;
-import com.br.crudestudo.model.request.UsuarioRequest;
-import com.br.crudestudo.record.usuario.UsuarioResponse;
+import com.br.crudestudo.record.usuario.request.UsuarioRequest;
+import com.br.crudestudo.record.usuario.request.UsuarioUpdateRequest;
+import com.br.crudestudo.record.usuario.response.UsuarioResponse;
 import com.br.crudestudo.repository.UsuarioRepository;
 import com.br.crudestudo.service.validation.usuario.ValidadorCadastroUsuario;
 import com.br.crudestudo.service.validation.usuario.ValidarCpfInvalido;
@@ -22,8 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -45,11 +45,7 @@ class UsuarioServiceTest {
     }
 
     private UsuarioRequest request(String cpf) {
-        UsuarioRequest r = new UsuarioRequest();
-        r.setNome("Maria da Silva");
-        r.setEmail("maria@email.com");
-        r.setCpf(cpf);
-        return r;
+        return new UsuarioRequest("Maria da Silva", "maria@email.com", cpf);
     }
 
     @Test
@@ -111,20 +107,29 @@ class UsuarioServiceTest {
     @Test
     void atualizaUsuarioExistente() {
         Usuario existente = new Usuario(1L, "Antigo", "antigo@e.com", "00000000191");
+
+        UsuarioUpdateRequest request = new UsuarioUpdateRequest("Maria da Silva", "maria@email.com");
+
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(usuarioRepository.save(existente)).thenReturn(existente);
 
-        UsuarioResponse resposta = service.atualizarUsuario(1L, request("123.456.789-09"));
+        UsuarioResponse resposta = service.atualizarUsuario(1L, request);
 
+        // 3. Assert (Verificações dos resultados)
+        assertNotNull(resposta);
         assertEquals("Maria da Silva", resposta.nome());
-        assertEquals("12345678909", resposta.cpf());
+        assertEquals("maria@email.com", resposta.email());
+
+        // REGRA RN13: O CPF deve permanecer o antigo do banco de dados, ignorando o do request
+        assertEquals("00000000191", resposta.cpf());
     }
 
     @Test
     void atualizarInexistenteLancaNotFound() {
         when(usuarioRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.atualizarUsuario(99L, request("12345678909")));
+        assertThrows(ResourceNotFoundException.class, () -> service.atualizarUsuario(
+                99L, new UsuarioUpdateRequest("mariaTeste", "mariaTeste@email.com")));
         verify(usuarioRepository, never()).save(any());
     }
 }

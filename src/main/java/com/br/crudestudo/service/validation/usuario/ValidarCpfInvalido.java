@@ -1,7 +1,7 @@
 package com.br.crudestudo.service.validation.usuario;
 
 import com.br.crudestudo.exception.CpfInvalidoException;
-import com.br.crudestudo.model.request.UsuarioRequest;
+import com.br.crudestudo.record.usuario.request.UsuarioRequest;
 import org.springframework.stereotype.Component;
 
 @Component

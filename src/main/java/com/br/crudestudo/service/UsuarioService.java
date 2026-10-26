@@ -2,8 +2,9 @@ package com.br.crudestudo.service;
 
 import com.br.crudestudo.exception.ResourceNotFoundException;
 import com.br.crudestudo.model.Usuario;
-import com.br.crudestudo.model.request.UsuarioRequest;
-import com.br.crudestudo.record.usuario.UsuarioResponse;
+import com.br.crudestudo.record.usuario.request.UsuarioRequest;
+import com.br.crudestudo.record.usuario.request.UsuarioUpdateRequest;
+import com.br.crudestudo.record.usuario.response.UsuarioResponse;
 import com.br.crudestudo.repository.UsuarioRepository;
 import com.br.crudestudo.service.validation.usuario.ValidadorCadastroUsuario;
 import jakarta.validation.Valid;
@@ -27,8 +28,8 @@ public class UsuarioService {
                 v.validarCadastroUsuario(usuarioRequest, null));
 
         Usuario usuario = new Usuario();
-        usuario.setNome(usuarioRequest.getNome());
-        usuario.setEmail(usuarioRequest.getEmail());
+        usuario.setNome(usuarioRequest.nome());
+        usuario.setEmail(usuarioRequest.email());
         usuario.setCpf(usuarioRequest.getCpfLimpo());
         return UsuarioResponse.deEntidade(usuarioRepository.save(usuario));
 
@@ -45,15 +46,24 @@ public class UsuarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário nao encontrado com o id: " + id));
     }
 
-    public UsuarioResponse atualizarUsuario(@Valid Long id, UsuarioRequest usuarioRequest) {
+    public UsuarioResponse atualizarUsuario(Long id, @Valid UsuarioUpdateRequest usuarioUpdateRequest) {
         Usuario usuarioExistente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + id));
 
-        validadores.forEach(validador -> validador.validarCadastroUsuario(usuarioRequest, id));
+        String emailNormalizado = usuarioUpdateRequest.email()
+                .trim()
+                .toLowerCase();
 
-        usuarioExistente.setNome(usuarioRequest.getNome());
-        usuarioExistente.setEmail(usuarioRequest.getEmail());
-        usuarioExistente.setCpf(usuarioRequest.getCpfLimpo());
+        // apenas com o e-mail que queremos validar, passando o ID atual para evitar o falso 409!
+        UsuarioRequest dadosParaValidar = new UsuarioRequest(
+                usuarioUpdateRequest.nome(),
+                emailNormalizado,
+                usuarioExistente.getCpf());
+
+        validadores.forEach(v -> v.validarCadastroUsuario(dadosParaValidar, id));
+
+        usuarioExistente.setNome(usuarioUpdateRequest.nome().trim());
+        usuarioExistente.setEmail(emailNormalizado);
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuarioExistente);
         return UsuarioResponse.deEntidade(usuarioAtualizado);
