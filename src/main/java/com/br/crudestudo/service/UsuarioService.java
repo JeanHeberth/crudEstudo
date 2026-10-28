@@ -48,7 +48,7 @@ public class UsuarioService {
 
     public UsuarioResponse atualizarUsuario(Long id, @Valid UsuarioUpdateRequest usuarioUpdateRequest) {
         Usuario usuarioExistente = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o id: " + id));
 
         String emailNormalizado = usuarioUpdateRequest.email()
                 .trim()

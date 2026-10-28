@@ -25,9 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UsuarioServiceTest {
@@ -86,7 +84,7 @@ class UsuarioServiceTest {
         Page<UsuarioResponse> resultado = service.buscarTodosUsuarios(pagina);
 
         assertEquals(1, resultado.getTotalElements());
-        assertEquals("Maria", resultado.getContent().get(0).nome());
+        assertEquals("Maria", resultado.getContent().getFirst().nome());
     }
 
     @Test
@@ -106,6 +104,8 @@ class UsuarioServiceTest {
 
     @Test
     void atualizaUsuarioExistente() {
+
+        // ARRANGE
         Usuario existente = new Usuario(1L, "Antigo", "antigo@e.com", "00000000191");
 
         UsuarioUpdateRequest request = new UsuarioUpdateRequest("Maria da Silva", "maria@email.com");
@@ -113,9 +113,14 @@ class UsuarioServiceTest {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(usuarioRepository.save(existente)).thenReturn(existente);
 
+
+        // ACT
         UsuarioResponse resposta = service.atualizarUsuario(1L, request);
 
+
         // 3. Assert (Verificações dos resultados)
+        verify(usuarioRepository, times(1)).findById(1L);
+        verify(usuarioRepository, times(1)).save(existente);
         assertNotNull(resposta);
         assertEquals("Maria da Silva", resposta.nome());
         assertEquals("maria@email.com", resposta.email());
@@ -126,10 +131,82 @@ class UsuarioServiceTest {
 
     @Test
     void atualizarInexistenteLancaNotFound() {
-        when(usuarioRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.atualizarUsuario(
-                99L, new UsuarioUpdateRequest("mariaTeste", "mariaTeste@email.com")));
+        Long id = 99L;
+
+        // ARRANGE
+        when(usuarioRepository.findById(id)).thenReturn(Optional.empty());
+
+        // ACT
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class, () -> service.atualizarUsuario(
+                        id, new UsuarioUpdateRequest("mariaTeste", "mariaTeste@email.com"))
+        );
+
+
+        // ASSERT
+        verify(usuarioRepository, times(1)).findById(id);
         verify(usuarioRepository, never()).save(any());
+        assertEquals("Usuário não encontrado com o id: " + id, exception.getMessage());
     }
+
+    @Test
+    void atualizarUsuarioComEmailDuplicado() {
+
+        Long id = 99L;
+
+        Usuario usuarioExiste = new Usuario(
+                id,
+                "Maria",
+                "maria@email.com",
+                "00000000191"
+        );
+
+        UsuarioUpdateRequest atualizaEmailExistente = new UsuarioUpdateRequest(
+                "Maria",
+                "teste@email.com"
+        );
+
+        when(usuarioRepository.findById(id)).thenReturn(Optional.of(usuarioExiste));
+        when(usuarioRepository.existsByEmailAndIdNot("teste@email.com", id)).thenReturn(true);
+        assertThrows(EmailDuplicadoException.class, () -> service.atualizarUsuario(id, atualizaEmailExistente));
+        verify(usuarioRepository, never()).save(any());
+        verify(usuarioRepository, times(1)).existsByEmailAndIdNot("teste@email.com", id);
+    }
+
+    @Test
+    void atualizarNomeMantendoMesmoEmail(){
+
+        Long id = 99L;
+
+        Usuario usuarioExiste = new Usuario(
+                id,
+                "Maria",
+                "maria@email.com",
+                "00000000191"
+        );
+
+        UsuarioUpdateRequest request = new UsuarioUpdateRequest(
+                "Maria Atualizado",
+                "maria@email.com"
+        );
+
+
+        when(usuarioRepository.findById(id))
+                .thenReturn(Optional.of(usuarioExiste));
+
+        when(usuarioRepository.existsByEmailAndIdNot(
+                "maria@email.com", id)).thenReturn(false);
+
+        when(usuarioRepository.save(usuarioExiste))
+                .thenReturn(usuarioExiste);
+
+
+        UsuarioResponse atualizaNomeParaUmExistente = service.atualizarUsuario(id, request);
+
+        verify(usuarioRepository, times(1)).save(usuarioExiste);
+        assertEquals("Maria Atualizado", atualizaNomeParaUmExistente.nome());
+        assertEquals("maria@email.com", atualizaNomeParaUmExistente.email());
+    }
+
 }
