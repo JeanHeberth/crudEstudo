@@ -175,7 +175,7 @@ class UsuarioServiceTest {
     }
 
     @Test
-    void atualizarNomeMantendoMesmoEmail(){
+    void atualizarNomeMantendoMesmoEmail() {
 
         Long id = 99L;
 
