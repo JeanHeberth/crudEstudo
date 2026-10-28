@@ -1,8 +1,9 @@
 package com.br.crudestudo.controller;
 
-import com.br.crudestudo.model.request.UsuarioRequest;
+import com.br.crudestudo.record.usuario.request.UsuarioRequest;
 import com.br.crudestudo.record.ErrorMessage;
-import com.br.crudestudo.record.usuario.UsuarioResponse;
+import com.br.crudestudo.record.usuario.request.UsuarioUpdateRequest;
+import com.br.crudestudo.record.usuario.response.UsuarioResponse;
 import com.br.crudestudo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -88,7 +89,7 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponse> atualizarUsuario(
             @Parameter(description = "Identificador do usuário a atualizar", example = "1") @PathVariable @Valid Long id,
-            @Valid @RequestBody UsuarioRequest usuarioRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.atualizarUsuario(id, usuarioRequest));
+            @Valid @RequestBody UsuarioUpdateRequest usuarioUpdateRequest) {
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.atualizarUsuario(id, usuarioUpdateRequest));
     }
 }

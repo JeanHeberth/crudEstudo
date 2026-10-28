@@ -3,7 +3,7 @@ package com.br.crudestudo.controller;
 import com.br.crudestudo.exception.CpfInvalidoException;
 import com.br.crudestudo.exception.EmailDuplicadoException;
 import com.br.crudestudo.exception.ResourceNotFoundException;
-import com.br.crudestudo.record.usuario.UsuarioResponse;
+import com.br.crudestudo.record.usuario.response.UsuarioResponse;
 import com.br.crudestudo.service.UsuarioService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,11 +109,11 @@ class UsuarioControllerTest {
     }
 
     @Test
-    void atualizarRetorna201() throws Exception {
+    void atualizarRetorna200() throws Exception {
         when(usuarioService.atualizarUsuario(eq(1L), any())).thenReturn(resposta());
 
         mockMvc.perform(put(BASE + "/1").contentType(MediaType.APPLICATION_JSON).content(CORPO_VALIDO))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome").value("Maria da Silva"));
     }
 
