@@ -1,7 +1,7 @@
 package com.br.crudestudo.service.validation.usuario;
 
 import com.br.crudestudo.exception.CpfDuplicadoException;
-import com.br.crudestudo.model.request.UsuarioRequest;
+import com.br.crudestudo.record.usuario.request.UsuarioRequest;
 import com.br.crudestudo.repository.UsuarioRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;

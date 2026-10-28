@@ -1,7 +1,7 @@
 package com.br.crudestudo.service.validation.usuario;
 
 import com.br.crudestudo.exception.EmailDuplicadoException;
-import com.br.crudestudo.model.request.UsuarioRequest;
+import com.br.crudestudo.record.usuario.request.UsuarioRequest;
 import com.br.crudestudo.repository.UsuarioRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,11 +15,11 @@ public class ValidarEmailDuplicado implements ValidadorCadastroUsuario {
     @Override
     public void validarCadastroUsuario(UsuarioRequest usuarioRequest, Long id) {
         if (id == null) {
-            if (usuarioRepository.existsByEmail(usuarioRequest.getEmail())) {
+            if (usuarioRepository.existsByEmail(usuarioRequest.email())) {
                 throw new EmailDuplicadoException("Email já cadastrado");
             }
         } else {
-            if (usuarioRepository.existsByEmailAndIdNot(usuarioRequest.getEmail(), id)) {
+            if (usuarioRepository.existsByEmailAndIdNot(usuarioRequest.email(), id)) {
                 throw new EmailDuplicadoException("Email já cadastrado por outro usuário");
             }
         }

@@ -1,4 +1,4 @@
-package com.br.crudestudo.record.usuario;
+package com.br.crudestudo.record.usuario.response;
 
 import com.br.crudestudo.model.Usuario;
 import io.swagger.v3.oas.annotations.media.Schema;
