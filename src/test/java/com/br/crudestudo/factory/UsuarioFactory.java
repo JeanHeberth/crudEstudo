@@ -4,6 +4,9 @@ import com.br.crudestudo.model.Usuario;
 import com.br.crudestudo.record.usuario.request.UsuarioRequest;
 import com.br.crudestudo.record.usuario.request.UsuarioUpdateRequest;
 
+import java.util.List;
+import java.util.stream.IntStream;
+
 public class UsuarioFactory {
     private UsuarioFactory() {
     }
@@ -20,7 +23,7 @@ public class UsuarioFactory {
             String nome,
             String email,
             String cpf
-    ){
+    ) {
         return new UsuarioRequest(nome, email, cpf);
     }
 
@@ -32,13 +35,15 @@ public class UsuarioFactory {
         );
     }
 
-    public static Usuario usuarioExistente() {
-        return new Usuario(
-                99L,
-                "Maria",
-                "maria@email.com",
-                "00000000019"
-        );
+    public static List<Usuario> usuarioExistente(int quantidade) {
+        return IntStream.rangeClosed(1, quantidade)
+                .mapToObj(i -> usuarioExistente(
+                        (long) i,
+                        "usuario" + i,
+                        "usuario" + i + "@email.com",
+                        "00000000019"
+                ))
+                .toList();
     }
 
     public static Usuario usuarioExistente(
