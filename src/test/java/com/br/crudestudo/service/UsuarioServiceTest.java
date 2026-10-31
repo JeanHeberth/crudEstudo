@@ -92,34 +92,134 @@ class UsuarioServiceTest {
 
         PageRequest pageRequest = PageRequest.of(0, 10);
 
-        Usuario usuario = usuarioExistente();
+        List<Usuario> usuarios = usuarioExistente(2);
 
         Page<Usuario> paginaSimulada = new PageImpl<>(
-                List.of(usuario),
+                usuarios,
                 pageRequest,
-                1
+                usuarios.size()
         );
 
         when(usuarioRepository.findAll(pageRequest))
                 .thenReturn(paginaSimulada);
 
-        Page<UsuarioResponse> resultado = service.buscarTodosUsuarios(pageRequest);
+        Page<UsuarioResponse> resultado =
+                service.buscarTodosUsuarios(pageRequest);
 
-        assertEquals(1, resultado.getTotalElements());
-        assertEquals(1, resultado.getContent().size());
+        assertEquals(usuarios.size(), resultado.getTotalElements());
+        assertEquals(usuarios.size(), resultado.getContent().size());
         assertEquals(0, resultado.getNumber());
         assertEquals(10, resultado.getSize());
-        assertEquals(usuario.getNome(),
-                resultado.getContent().getFirst().nome());
+        assertEquals(usuarios.getFirst().getNome(), resultado.getContent().getFirst().nome());
 
         verify(usuarioRepository, times(1))
                 .findAll(pageRequest);
     }
 
     @Test
+    void listaUsuariosQuandoNaoExistemRegistros() {
+
+        PageRequest pageRequest = PageRequest.of(0, 10);
+
+        when(usuarioRepository.findAll(pageRequest))
+                .thenReturn(Page.empty(pageRequest));
+
+        Page<UsuarioResponse> resultado =
+                service.buscarTodosUsuarios(pageRequest);
+
+        assertTrue(resultado.isEmpty());
+        assertEquals(0, resultado.getTotalElements());
+
+        verify(usuarioRepository, times(1))
+                .findAll(pageRequest);
+    }
+
+    @Test
+    void listaDoisUsuarios() {
+        Usuario usuario1 = usuarioExistente(
+                1L, "Maria",
+                "maria@email.com",
+                "00000000191"
+        );
+
+        Usuario usuario2 = usuarioExistente(
+                2L, "João",
+                "joao@email.com",
+                "12345678909"
+        );
+
+        PageRequest pageRequest = PageRequest.of(0, 10);
+
+        Page<Usuario> pagina = new PageImpl<>(
+                List.of(usuario1, usuario2),
+                pageRequest,
+                2
+        );
+
+        when(usuarioRepository.findAll(pageRequest))
+                .thenReturn(pagina);
+
+        Page<UsuarioResponse> resultado = service.buscarTodosUsuarios(pageRequest);
+        assertEquals(2, resultado.getTotalElements());
+        assertEquals(2, resultado.getContent().size());
+        assertEquals("Maria", resultado.getContent().getFirst().nome());
+        assertEquals("João", resultado.getContent().get(1).nome());
+        assertEquals(1L, resultado.getContent().get(0).id());
+        assertEquals(2L, resultado.getContent().get(1).id());
+
+        verify(usuarioRepository, times(1))
+                .findAll(pageRequest);
+
+    }
+
+    @Test
+    void listaCincoUsuarios() {
+
+        PageRequest pageRequest = PageRequest.of(1, 10);
+
+        List<Usuario> usuarios = usuarioExistente(15);
+
+        List<Usuario> segundaPagina = usuarios.subList(10, 15);
+
+        Page<Usuario> pagina = new PageImpl<>(
+                segundaPagina,
+                pageRequest,
+                usuarios.size()
+        );
+
+        when(usuarioRepository.findAll(pageRequest))
+                .thenReturn(pagina);
+
+        Page<UsuarioResponse> resultado =
+                service.buscarTodosUsuarios(pageRequest);
+
+
+        assertEquals(15, resultado.getTotalElements());
+        assertEquals(5, resultado.getContent().size());
+        assertEquals(2, resultado.getTotalPages());
+        assertEquals(1, resultado.getNumber());
+        assertEquals(10, resultado.getSize());
+
+        assertEquals(segundaPagina.getFirst().getId(),
+                resultado.getContent().getFirst().id());
+
+        assertEquals(segundaPagina.getLast().getId(),
+                resultado.getContent().getLast().id());
+
+        verify(usuarioRepository, times(1))
+                .findAll(pageRequest);
+
+    }
+
+    @Test
     void buscaUsuarioExistente() {
 
-        Usuario usuario = usuarioExistente();
+        Usuario usuario = usuarioExistente(
+                1L,
+                "Maria",
+                "maria@email.com",
+                "00000000019"
+        );
         Long id = usuario.getId();
 
         when(usuarioRepository.findById(id))
@@ -137,7 +237,12 @@ class UsuarioServiceTest {
     @Test
     void buscaUsuarioInexistenteLancaNotFound() {
 
-        Usuario usuario = usuarioExistente();
+        Usuario usuario = usuarioExistente(
+                99L,
+                "Teste",
+                "teste@email.com",
+                "12345678912"
+        );
 
         when(usuarioRepository.findById(
                 usuario.getId()))
@@ -148,26 +253,38 @@ class UsuarioServiceTest {
     }
 
     @Test
-    void atualizaUsuarioExistente() {
+    void atualizaUsuarioExistenteMantendoCpf() {
 
-        Long id = usuarioExistente().getId();
 
         // ARRANGE
-        Usuario existente = usuarioExistente(id, "Antigo", "antigo@e.com", "00000000191");
+        Usuario usuario = usuarioExistente(
+                99L,
+                "Antigo",
+                "antigo@e.com",
+                "00000000191"
+        );
 
-        UsuarioUpdateRequest request = usuarioParaAtualizar("Maria da Silva", "maria@email.com");
+        UsuarioUpdateRequest request = usuarioParaAtualizar(
+                "Maria da Silva",
+                "maria@email.com"
+        );
 
-        when(usuarioRepository.findById(id)).thenReturn(Optional.of(existente));
-        when(usuarioRepository.save(existente)).thenReturn(existente);
+        when(usuarioRepository.findById(usuario.getId()))
+                .thenReturn(Optional.of(usuario));
+
+        when(usuarioRepository.save(usuario)).
+                thenReturn(usuario);
 
 
         // ACT
-        UsuarioResponse resposta = service.atualizarUsuario(id, request);
+        UsuarioResponse resposta = service.atualizarUsuario(
+                usuario.getId(), request
+        );
 
 
         // 3. Assert (Verificações dos resultados)
-        verify(usuarioRepository, times(1)).findById(id);
-        verify(usuarioRepository, times(1)).save(existente);
+        verify(usuarioRepository, times(1)).findById(usuario.getId());
+        verify(usuarioRepository, times(1)).save(usuario);
         assertNotNull(resposta);
         assertEquals("Maria da Silva", resposta.nome());
         assertEquals("maria@email.com", resposta.email());
@@ -209,42 +326,49 @@ class UsuarioServiceTest {
     @Test
     void atualizarUsuarioComEmailDuplicado() {
 
-        Usuario usuarioExiste = usuarioExistente();
+        Usuario usuario = usuarioExistente(
+                99L,
+                "Antigo",
+                "antigo@e.com",
+                "00000000191"
+        );
 
-        Long id = usuarioExiste.getId();
-
-        UsuarioUpdateRequest atualizaEmailExistente = new UsuarioUpdateRequest(
+        UsuarioUpdateRequest atualizaEmailExistente = usuarioParaAtualizar(
                 "Maria",
                 "teste@email.com"
         );
 
-        when(usuarioRepository.findById(id)).thenReturn(Optional.of(usuarioExiste));
-        when(usuarioRepository.existsByEmailAndIdNot("teste@email.com", id)).thenReturn(true);
-        assertThrows(EmailDuplicadoException.class, () -> service.atualizarUsuario(id, atualizaEmailExistente));
+        when(usuarioRepository.findById(usuario.getId())).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.existsByEmailAndIdNot("teste@email.com", usuario.getId())).thenReturn(true);
+        assertThrows(EmailDuplicadoException.class, () -> service.atualizarUsuario(usuario.getId(), atualizaEmailExistente));
         verify(usuarioRepository, never()).save(any());
-        verify(usuarioRepository, times(1)).existsByEmailAndIdNot("teste@email.com", id);
+        verify(usuarioRepository, times(1)).existsByEmailAndIdNot("teste@email.com", usuario.getId());
     }
 
     @Test
     void atualizarNomeMantendoMesmoEmail() {
 
-        Usuario usuarioExiste = usuarioExistente();
+        Usuario usuarioExiste = usuarioExistente(
+                99L,
+                "Maria da Silva",
+                "maria@email.com",
+                "00000000191"
+        );
 
-        Long id = usuarioExiste.getId();
 
         UsuarioUpdateRequest request = usuarioParaAtualizar();
 
-        when(usuarioRepository.findById(id))
+        when(usuarioRepository.findById(usuarioExiste.getId()))
                 .thenReturn(Optional.of(usuarioExiste));
 
         when(usuarioRepository.existsByEmailAndIdNot(
-                usuarioExiste.getEmail(), id)).thenReturn(false);
+                usuarioExiste.getEmail(), usuarioExiste.getId())).thenReturn(false);
 
         when(usuarioRepository.save(usuarioExiste))
                 .thenReturn(usuarioExiste);
 
 
-        UsuarioResponse atualizaNomeParaUmExistente = service.atualizarUsuario(id, request);
+        UsuarioResponse atualizaNomeParaUmExistente = service.atualizarUsuario(usuarioExiste.getId(), request);
 
         verify(usuarioRepository, times(1)).save(usuarioExiste);
         assertEquals("Maria Atualizado", atualizaNomeParaUmExistente.nome());
