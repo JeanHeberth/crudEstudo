@@ -12,7 +12,7 @@ description = 'crudEstudo'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(27)
     }
 }
 
@@ -27,16 +27,16 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1'
-    compileOnly 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok:1.18.48'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat-runtime'
     runtimeOnly 'com.mysql:mysql-connector-j'
-    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok:1.18.48'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testCompileOnly 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok:1.18.48'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testAnnotationProcessor 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.48'
 }
 
 war {
@@ -56,7 +56,7 @@ tasks.named('test') {
 // 0.00: fração (ex.: 0.70) = cobertura de linhas medida menos ~5 pontos.
 
 jacoco {
-    toolVersion = '0.8.13'
+    toolVersion = '0.8.16'
 }
 
 // Cada job de teste do CI gera o seu test.exec. O gate de qualidade baixa todos em
