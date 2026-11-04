@@ -20,7 +20,7 @@ permissions:
   contents: read
 
 env:
-  JAVA_VERSION: '21'
+  JAVA_VERSION: '27'
 
 jobs:
   validate-git-constraints:
@@ -320,12 +320,9 @@ jobs:
       - uses: github/codeql-action/init@v3
         with:
           languages: java-kotlin
-          build-mode: manual
-
-      - uses: gradle/actions/setup-gradle@v4
-
-      - name: Compilar para análise
-        run: ./gradlew compileJava --no-build-cache
+          # O extrator do CodeQL não acompanha o javac do Java 27 no modo manual
+          # ("no source code seen during build"); sem build ele lê os fontes direto.
+          build-mode: none
 
       - uses: github/codeql-action/analyze@v3
         with:
