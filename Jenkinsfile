@@ -31,12 +31,25 @@ pipeline {
 						sh '''
                             echo "Validando Java..."
                             java -version
+
+                            echo "Versao do Gradle:"
+                            ./gradlew --version
+
+                            echo "JDKs reconhecidos pelo Gradle:"
+                            ./gradlew -q javaToolchains
                         '''
 					} else {
 						bat '''
                             @echo off
-                            echo Validando Java...
+
+                            echo Java do agente Jenkins:
                             java -version
+
+                            echo Versao do Gradle:
+                            call gradlew.bat --version
+
+                            echo JDKs reconhecidos pelo Gradle:
+                            call gradlew.bat -q javaToolchains
                         '''
 					}
 				}
